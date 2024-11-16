@@ -39,3 +39,5 @@ build/
 
 # Ignore screenshots folder
 src/test/resources/screenshots/
+# Ignore IntelliJ IDEA project files
+.idea/

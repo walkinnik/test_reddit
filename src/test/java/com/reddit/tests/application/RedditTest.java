@@ -6,7 +6,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import com.reddit.helpers.TestUtils; // Import TestUtils
+import com.reddit.helpers.TestUtils;
 
 import java.net.MalformedURLException;
 import io.appium.java_client.android.options.UiAutomator2Options;
