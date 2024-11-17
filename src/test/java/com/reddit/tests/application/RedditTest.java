@@ -1,5 +1,6 @@
 package com.reddit.tests.application;
 
+import com.reddit.helpers.ConfigLoader;
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.AppiumDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -12,6 +13,7 @@ import java.net.MalformedURLException;
 import io.appium.java_client.android.options.UiAutomator2Options;
 import java.net.URL;
 import java.time.Duration;
+import java.util.Map;
 
 
 public class RedditTest {
@@ -22,18 +24,21 @@ public class RedditTest {
         openMobileApp();
     }
 
+    // Load the configuration
+    static Map<String, Object> config = ConfigLoader.loadConfig("config.yml");
+
     @BeforeMethod
     public static void openMobileApp() throws MalformedURLException {
         UiAutomator2Options connectionOptions = new UiAutomator2Options()
-                .setDeviceName("Pixel7") // emulated device name  Pixel7 // Mipad4
-                .setUdid("emulator-5554") // from 'adb devices' output  emulator-5554 // 8dc5ccfd
-                .setPlatformName("Android") // emulated device platform
-                .setPlatformVersion("15") // android version // 8.1.0
-                .setAutomationName("UiAutomator2") // appium driver name
-                .setAppPackage("com.reddit.frontpage") // from apkinfo app
-                .setAppActivity("com.reddit.launch.main.MainActivity"); // from apkinfo app
+                .setDeviceName((String) config.get("deviceName"))
+                .setUdid((String) config.get("udid"))
+                .setPlatformName((String) config.get("platformName"))
+                .setAutomationName((String) config.get("automationName"))
+                .setPlatformVersion((String) config.get("platformVersion"))
+                .setAppPackage((String) config.get("appPackage"))
+                .setAppActivity((String) config.get("appActivity"));
 
-        URL appiumServerUrl = new URL("http://127.0.0.1:4723");
+        URL appiumServerUrl = new URL(((String) config.get("appiumServerUrl")));
         driver = new AppiumDriver(appiumServerUrl, connectionOptions);
 
         System.out.println("Application started!");
@@ -48,7 +53,7 @@ public class RedditTest {
 
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20)); // Timeout of 20 seconds
 
-        TestUtils.login(driver, "testusername", "testpassword", wait);
+        TestUtils.login(driver, ((String) config.get("invalidLogin")), ((String) config.get("invalidPassword")), wait);
 
         // XPath for user icon that appears when user logged in
         String userIconXPath = "//android.widget.ImageView[@resource-id=\"com.reddit.frontpage:id/inner_user_icon\"]";
@@ -77,7 +82,7 @@ public class RedditTest {
 
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20)); // Timeout of 20 seconds
 
-        TestUtils.login(driver, "monkeyinspacetest", "SeeYouSpaceCowboy123$", wait);
+        TestUtils.login(driver, ((String) config.get("validLogin")), ((String) config.get("validPassword")), wait);
 
         // Check if Reddit Notifications pop-up
         try {
@@ -118,7 +123,7 @@ public class RedditTest {
 
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20)); // Timeout of 20 seconds
 
-        TestUtils.login(driver, "monkeyinspacetest", "SeeYouSpaceCowboy123$", wait);
+        TestUtils.login(driver, ((String) config.get("validLogin")), ((String) config.get("validPassword")), wait);
 
         // Check if Reddit Notifications pop-up
         try {
@@ -160,8 +165,6 @@ public class RedditTest {
             boolean isCommunities = TestUtils.isElementPresent(driver, AppiumBy.xpath("(//android.widget.TextView[@text=\"Communities\"])[1]"), wait);
             if (isCommunities){
                 System.out.println("Moved to Communities page.");
-                // Move to Chat
-                // driver.findElement(AppiumBy.xpath("//android.view.ViewGroup[@resource-id=\"com.reddit.frontpage:id/bottom_nav_compose\"]/android.view.View/android.view.View/android.view.View[4]/android.view.View")).click();
             } else{
                 TestUtils.takeScreenshot(driver, "communities_page_not_found");
                 Assert.fail("Move to Communities failed!");
@@ -205,7 +208,6 @@ public class RedditTest {
             Assert.fail("Login failed unexpectedly!");
         }
     }
-
 
     @AfterMethod
     public static void closeApp() {
