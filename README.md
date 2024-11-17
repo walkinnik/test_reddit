@@ -30,13 +30,21 @@ This repository contains an automated test suite for the Reddit mobile applicati
    ```bash
    npm install -g appium
    ```
+   Make sure to have UIAutomator2 driver installed for Appium.
+   ```bash
+   appium driver list --installed
+   ```
+   If it's not on the list you can install it using:
+   ```bash
+   appium driver install uiautomator2
+   ```
 
 4. **Android Emulator or Real Device**  
    Make sure to have an Android emulator or a real device connected. You can verify this by running:
    ```bash
    adb devices
    ```
-   
+   Make sure to have Reddit application installed either from Google Store or via apk download-installation. 
 ---
 
 ## **Setting Up the Project**
