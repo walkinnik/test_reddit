@@ -2,16 +2,16 @@ package com.reddit.tests.application;
 
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.AppiumDriver;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import com.reddit.helpers.TestUtils;
 
 import java.net.MalformedURLException;
 import io.appium.java_client.android.options.UiAutomator2Options;
 import java.net.URL;
-import java.util.NoSuchElementException;
+import java.time.Duration;
 
 public class RedditTest {
 
@@ -21,8 +21,8 @@ public class RedditTest {
         openMobileApp();
     }
 
-    @BeforeClass
-    public static void openMobileApp()throws MalformedURLException { // used to open app
+    @BeforeMethod
+    public static void openMobileApp() throws MalformedURLException {
         UiAutomator2Options connectionOptions = new UiAutomator2Options()
                 .setDeviceName("Pixel7") // emulated device name  Pixel7 // Mipad4
                 .setUdid("emulator-5554") // from 'adb devices' output  emulator-5554 // 8dc5ccfd
@@ -44,36 +44,69 @@ public class RedditTest {
         String expectedTitleTextFirst = "Log in to Reddit";
         TestUtils.validateTitleText(driver, "//android.widget.TextView[@resource-id=\"onboarding_title\"]", expectedTitleTextFirst, "log_in_to_reddit");
 
-        login("testusername", "testpassword");
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20)); // Timeout of 20 seconds
 
-        // Locate title element and get its text
-        String titleText = "";
-        try {
-            titleText = driver.findElement(
-                    AppiumBy.xpath("//android.widget.TextView[@resource-id=\"login_title\"]")
-            ).getText();
-        } catch (Exception exception) {
-            Assert.fail("Element not found: login_title", exception);
-        }
+        TestUtils.login(driver, "testusername", "testpassword", wait);
 
-        String expectedTitleText = "Enter your login information";
-        Assert.assertEquals(titleText, expectedTitleText, "Login title text doesn't match, means user logged in!");
-    }
+        // XPath for user icon that appears when user logged in
+        String userIconXPath = "//android.widget.ImageView[@resource-id=\"com.reddit.frontpage:id/inner_user_icon\"]";
 
-    private void login(String username, String password) throws NoSuchElementException{
-        try {
-            driver.findElement(AppiumBy.xpath("//android.widget.Button[@content-desc=\"Use email or username\"]")).click();
-            driver.findElement(AppiumBy.xpath("(//android.widget.EditText[@resource-id=\"text_auto_fill\"])[1]")).sendKeys(username);
-            driver.findElement(AppiumBy.xpath("(//android.widget.EditText[@resource-id=\"text_auto_fill\"])[2]")).sendKeys(password);
-            driver.findElement(AppiumBy.xpath("//android.view.View[@resource-id=\"continue_button\"]")).click();
-        } catch (NoSuchElementException exception) {
-            System.out.println("Element not found: " + exception.getMessage());
-            // Take screenshot on failure
-            TestUtils.takeScreenshot(driver, "login_error_screenshot");
+        // Check if the user icon is present
+        boolean isUserIconPresent = TestUtils.isElementPresent(driver, AppiumBy.xpath(userIconXPath), wait);
+
+        if (!isUserIconPresent) {
+            System.out.println("Login failed as expected.");
+        } else {
+            /*
+            If the icon is present, fail the test because login should not succeed with invalid credentials
+            It highlights 'invalid username or password' in red, but couldn't find in appium inspector
+            So this is a workaround
+            */
+            Assert.fail("Login succeeded unexpectedly!");
         }
     }
 
-    @AfterClass
+    @Test
+    public void testLoginSuccess() {
+        // Validate the title text
+        String expectedTitleTextFirst = "Log in to Reddit";
+        TestUtils.validateTitleText(driver, "//android.widget.TextView[@resource-id=\"onboarding_title\"]", expectedTitleTextFirst, "log_in_to_reddit");
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20)); // Timeout of 20 seconds
+
+        TestUtils.login(driver, "monkeyinspacetest", "SeeYouSpaceCowboy123$", wait);
+
+        // Check if Reddit Notifications pop-up
+        try {
+            // Wait for the element with Reddit Notifications to be visible
+            wait.until(ExpectedConditions.visibilityOfElementLocated(
+                    AppiumBy.xpath("//android.widget.TextView[@resource-id=\"com.android.permissioncontroller:id/permission_message\"]")
+            ));
+            if (TestUtils.isElementPresent(driver, AppiumBy.xpath("//android.widget.TextView[@resource-id=\"com.android.permissioncontroller:id/permission_message\"]"), wait)) {
+                System.out.println("Reddit Notifications pop-up detected. Dismissing it...");
+                // click on allow notifications
+                driver.findElement(AppiumBy.xpath("//android.widget.Button[@resource-id=\"com.android.permissioncontroller:id/permission_allow_button\"]")).click();
+                System.out.println("Reddit Notifications accepted");
+            }
+        } catch (Exception e) {
+            System.out.println("No Reddit Notification pop-up detected. - This is fine if allowed on previous iterations.");
+        }
+
+        // XPath for user icon that appears when user logged in
+        String userIconXPath = "//android.widget.ImageView[@resource-id=\"com.reddit.frontpage:id/inner_user_icon\"]";
+
+        // Check if the user icon is present
+        boolean isUserIconPresent = TestUtils.isElementPresent(driver, AppiumBy.xpath(userIconXPath), wait);
+
+        if (isUserIconPresent) {
+            System.out.println("Login succeeded as expected.");
+        } else {
+            // If the icon is not present, fail the test because login should have succeeded
+            Assert.fail("Login failed unexpectedly!");
+        }
+    }
+
+    @AfterMethod
     public static void closeApp() {
         if (driver != null) {
             driver.quit();
