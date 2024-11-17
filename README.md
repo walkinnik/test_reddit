@@ -96,10 +96,10 @@ automationName: "UiAutomator2"
 appPackage: "com.reddit.frontpage"
 appActivity: "com.reddit.launch.main.MainActivity"
 appiumServerUrl: "http://127.0.0.1:4723"
-invalidLogin: "test123"
-invalidPassword: "321tset"
-validLogin: "monkeyinspacetest"
-validPassword: "SeeYouSpaceCowboy123$"
+invalidLogin: ""
+invalidPassword: ""
+validLogin: ""
+validPassword: ""
 ```
 Parameter Descriptions:
 
@@ -113,6 +113,10 @@ Parameter Descriptions:
 - appiumServerUrl: URL of the Appium server.
 - invalidLogin / invalidPassword: Credentials for testing invalid login scenarios.
 - validLogin / validPassword: Credentials for testing successful login scenarios.
+
+### ! Important ! ###
+Fill empty values for invalidLogin / invalidPassword and validLogin / validPassword before running tests. 
+
 
 ___
 

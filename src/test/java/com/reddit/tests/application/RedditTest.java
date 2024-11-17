@@ -61,16 +61,7 @@ public class RedditTest {
         // Check if the user icon is present
         boolean isUserIconPresent = TestUtils.isElementPresent(driver, AppiumBy.xpath(userIconXPath), wait);
 
-        if (!isUserIconPresent) {
-            System.out.println("Login failed as expected.");
-        } else {
-            /*
-            If the icon is present, fail the test because login should not succeed with invalid credentials
-            It highlights 'invalid username or password' in red, but couldn't find in appium inspector
-            So this is a workaround
-            */
-            Assert.fail("Login succeeded unexpectedly!");
-        }
+        Assert.assertFalse(isUserIconPresent, "Login succeeded unexpectedly!");
     }
 
 
@@ -106,12 +97,7 @@ public class RedditTest {
         // Check if the user icon is present
         boolean isUserIconPresent = TestUtils.isElementPresent(driver, AppiumBy.xpath(userIconXPath), wait);
 
-        if (isUserIconPresent) {
-            System.out.println("Login succeeded as expected.");
-        } else {
-            // If the icon is not present, fail the test because login should have succeeded
-            Assert.fail("Login failed unexpectedly!");
-        }
+        Assert.assertTrue(isUserIconPresent, "Login failed unexpectedly!");
     }
 
 
